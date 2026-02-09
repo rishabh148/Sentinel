@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import Draggable from 'react-draggable';
 import * as faceapi from 'face-api.js';
 import api from '../services/api';
 import { FACE_DETECTION_CONFIG } from '../config';
@@ -22,6 +23,7 @@ const TakeExam = () => {
     const location = useLocation();
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const dragRef = useRef(null); // For react-draggable React 19 compatibility
 
     // Get verified state from ExamPrecheck navigation
     const { verified, storedDescriptor: passedDescriptor } = location.state || {};
@@ -607,7 +609,8 @@ const TakeExam = () => {
             </div>
 
             {/* Webcam PIP */}
-            <div className="pip-container">
+            <Draggable bounds="body" nodeRef={dragRef}>
+                <div ref={dragRef} className="pip-container">
                     <video
                         ref={videoRef}
                         autoPlay
@@ -633,6 +636,7 @@ const TakeExam = () => {
                         🔴 LIVE
                     </div>
                 </div>
+            </Draggable>
 
             {/* Models loading indicator */}
             {!modelsLoaded && faceStatus !== 'no-models' && (
