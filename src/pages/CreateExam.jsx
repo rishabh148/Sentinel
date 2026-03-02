@@ -1,7 +1,296 @@
-export default function Page() {
-  return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-600 text-sm">
-      Loading…
-    </div>
-  );
-}
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import api from '../services/api';
+
+const CreateExam = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [examData, setExamData] = useState({
+        title: '',
+        description: '',
+        duration: 30
+    });
+    const [questions, setQuestions] = useState([
+        { text: '', options: ['', '', '', ''], correctOption: 0 }
+    ]);
+
+    // Validation error state - tracks which fields have errors
+    const [errors, setErrors] = useState({
+        title: false,
+        questions: [] // Array of { text: false, options: [false, false, false, false] }
+    });
+
+    const addQuestion = () => {
+        setQuestions([
+            ...questions,
+            { text: '', options: ['', '', '', ''], correctOption: 0 }
+        ]);
+        // Add error tracking for new question
+        setErrors(prev => ({
+            ...prev,
+            questions: [...prev.questions, { text: false, options: [false, false, false, false] }]
+        }));
+    };
+
+    const removeQuestion = (index) => {
+        if (questions.length > 1) {
+            setQuestions(questions.filter((_, i) => i !== index));
+            setErrors(prev => ({
+                ...prev,
+                questions: prev.questions.filter((_, i) => i !== index)
+            }));
+        }
+    };
+
+    const updateQuestion = (index, field, value) => {
+        const updated = [...questions];
+        updated[index][field] = value;
+        setQuestions(updated);
+
+        // Clear error when user types
+        if (field === 'text' && value.trim()) {
+            setErrors(prev => {
+                const newQuestions = [...prev.questions];
+                if (newQuestions[index]) {
+                    newQuestions[index] = { ...newQuestions[index], text: false };
+                }
+                return { ...prev, questions: newQuestions };
+            });
+        }
+    };
+
+    const updateOption = (questionIndex, optionIndex, value) => {
+        const updated = [...questions];
+        updated[questionIndex].options[optionIndex] = value;
+        setQuestions(updated);
+
+        // Clear error when user types
+        if (value.trim()) {
+            setErrors(prev => {
+                const newQuestions = [...prev.questions];
+                if (newQuestions[questionIndex]) {
+                    const newOptions = [...newQuestions[questionIndex].options];
+                    newOptions[optionIndex] = false;
+                    newQuestions[questionIndex] = { ...newQuestions[questionIndex], options: newOptions };
+                }
+                return { ...prev, questions: newQuestions };
+            });
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Build error state
+        let hasErrors = false;
+        const newErrors = {
+            title: !examData.title.trim(),
+            questions: questions.map(q => ({
+                text: !q.text.trim(),
+                options: q.options.map(o => !o.trim())
+            }))
+        };
+
+        // Check if any errors exist
+        if (newErrors.title) hasErrors = true;
+        newErrors.questions.forEach(q => {
+            if (q.text) hasErrors = true;
+            q.options.forEach(o => { if (o) hasErrors = true; });
+        });
+
+        if (hasErrors) {
+            setErrors(newErrors);
+            toast.error('Please fill in all required fields');
+            return;
+        }
+
+        // Clear all errors
+        setErrors({ title: false, questions: [] });
+
+        setLoading(true);
+
+        try {
+            await api.post('/exams', {
+                ...examData,
+                questions
+            });
+            toast.success('Exam created successfully!');
+            navigate('/teacher');
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'Failed to create exam');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen">
+            {/* Navbar */}
+            <nav className="glass-card sticky top-0 z-50 border-b border-white/10 rounded-none">
+                <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <Link to="/teacher" className="text-2xl font-bold text-gradient">Sentinel</Link>
+                    <Link to="/teacher" className="btn-secondary text-sm">
+                        ← Back to Dashboard
+                    </Link>
+                </div>
+            </nav>
+
+            <main className="max-w-4xl mx-auto px-6 py-8">
+                <h2 className="text-3xl font-bold mb-8">Create New Exam</h2>
+
+                <form onSubmit={handleSubmit}>
+                    {/* Exam Details Card */}
+                    <div className="glass-card p-6 mb-6">
+                        <h3 className="text-xl font-semibold mb-4">Exam Details</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                    Exam Title *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={examData.title}
+                                    onChange={(e) => {
+                                        setExamData({ ...examData, title: e.target.value });
+                                        if (e.target.value.trim()) setErrors(prev => ({ ...prev, title: false }));
+                                    }}
+                                    className={`input-field ${errors.title ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                                    placeholder="e.g., Midterm Mathematics Exam"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                    Description
+                                </label>
+                                <textarea
+                                    value={examData.description}
+                                    onChange={(e) => setExamData({ ...examData, description: e.target.value })}
+                                    className="input-field min-h-[100px]"
+                                    placeholder="Brief description of the exam..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                    Duration (minutes) *
+                                </label>
+                                <input
+                                    type="number"
+                                    value={examData.duration}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 0;
+                                        setExamData({ ...examData, duration: value });
+                                    }}
+                                    className={`input-field w-32 ${examData.duration < 5 || examData.duration > 180
+                                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                                        : ''
+                                        }`}
+                                    min="5"
+                                    max="180"
+                                    required
+                                />
+                                {(examData.duration < 5 || examData.duration > 180) && (
+                                    <p className="text-red-400 text-xs mt-1">
+                                        ⚠️ Duration must be between 5 and 180 minutes
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Questions */}
+                    <div className="glass-card p-6 mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-semibold">Questions ({questions.length})</h3>
+                            <button
+                                type="button"
+                                onClick={addQuestion}
+                                className="btn-secondary text-sm"
+                            >
+                                + Add Question
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {questions.map((question, qIndex) => (
+                                <div
+                                    key={qIndex}
+                                    className="p-5 rounded-xl bg-zinc-800/50 border border-zinc-700/50"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-sm font-medium text-zinc-400">
+                                            Question {qIndex + 1}
+                                        </span>
+                                        {questions.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeQuestion(qIndex)}
+                                                className="text-red-400 hover:text-red-300 text-sm"
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <input
+                                            type="text"
+                                            value={question.text}
+                                            onChange={(e) => updateQuestion(qIndex, 'text', e.target.value)}
+                                            className={`input-field ${errors.questions[qIndex]?.text ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                                            placeholder="Enter question text..."
+                                        />
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {question.options.map((option, oIndex) => (
+                                                <div key={oIndex} className="flex items-center gap-2">
+                                                    <input
+                                                        type="radio"
+                                                        name={`correct-${qIndex}`}
+                                                        checked={question.correctOption === oIndex}
+                                                        onChange={() => updateQuestion(qIndex, 'correctOption', oIndex)}
+                                                        className="w-4 h-4 text-indigo-600"
+                                                    />
+                                                    <input
+                                                        type="text"
+                                                        value={option}
+                                                        onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
+                                                        className={`input-field flex-1 ${errors.questions[qIndex]?.options?.[oIndex] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                                                        placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-zinc-500">
+                                            💡 Select the radio button next to the correct answer
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Submit */}
+                    <div className="flex items-center justify-end gap-4">
+                        <Link to="/teacher" className="btn-secondary">
+                            Cancel
+                        </Link>
+                        <button
+                            type="submit"
+                            disabled={loading || examData.duration < 5 || examData.duration > 180}
+                            className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                '✨ Create Exam'
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </div>
+    );
+};
+
+export default CreateExam;
