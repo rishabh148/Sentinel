@@ -2,6 +2,79 @@
  * Utility Functions for Sentinel Frontend
  */
 
+/**
+ * Format time in MM:SS format
+ * @param {number} seconds - Time in seconds
+ * @returns {string} Formatted time string
+ */
+export const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+};
+
+/**
+ * Format date to human-readable string
+ * @param {string|Date} date - Date to format
+ * @returns {string} Formatted date
+ */
+export const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+/**
+ * Calculate percentage
+ * @param {number} value - Current value
+ * @param {number} total - Total value
+ * @returns {number} Percentage (0-100)
+ */
+export const calculatePercentage = (value, total) => {
+    if (total === 0) return 0;
+    return Math.round((value / total) * 100);
+};
+
+/**
+ * Truncate text with ellipsis
+ * @param {string} text - Text to truncate
+ * @param {number} maxLength - Maximum length
+ * @returns {string} Truncated text
+ */
+export const truncateText = (text, maxLength = 50) => {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+};
+
+/**
+ * Get grade from percentage
+ * @param {number} percentage - Score percentage
+ * @returns {object} Grade info with letter, color, bg, and message
+ */
+export const getGrade = (percentage) => {
+    if (percentage >= 90) return { letter: 'A+', color: 'text-green-400', bg: 'bg-green-500/20', message: 'Outstanding!' };
+    if (percentage >= 80) return { letter: 'A', color: 'text-green-400', bg: 'bg-green-500/20', message: 'Excellent work!' };
+    if (percentage >= 70) return { letter: 'B', color: 'text-blue-400', bg: 'bg-blue-500/20', message: 'Good job!' };
+    if (percentage >= 60) return { letter: 'C', color: 'text-yellow-400', bg: 'bg-yellow-500/20', message: 'Keep practicing!' };
+    if (percentage >= 50) return { letter: 'D', color: 'text-orange-400', bg: 'bg-orange-500/20', message: 'Room for improvement' };
+    return { letter: 'F', color: 'text-red-400', bg: 'bg-red-500/20', message: 'Study harder next time' };
+};
+
+/**
+ * Sanitize HTML to prevent XSS (simple client-side version)
+ * @param {string} str - String to sanitize
+ * @returns {string} Sanitized string
+ */
+export const sanitizeHtml = (str) => {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+};
 
 /**
  * Generate random color based on string (for avatars)
