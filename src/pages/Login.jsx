@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
@@ -25,6 +25,8 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const isSubmitting = useRef(false); // Synchronous lock for rapid clicks
+
     // Google OAuth state
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [pendingCredential, setPendingCredential] = useState(null);
@@ -35,6 +37,11 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Block rapid clicks instantly (synchronous check)
+        if (isSubmitting.current) return;
+        isSubmitting.current = true;
+
         setLoading(true);
 
         try {
@@ -44,6 +51,7 @@ const Login = () => {
         } catch (error) {
             toast.error(error.response?.data?.error || 'Login failed');
         } finally {
+            isSubmitting.current = false;
             setLoading(false);
         }
     };
@@ -107,7 +115,7 @@ const Login = () => {
                                 onError={handleGoogleError}
                                 theme="filled_black"
                                 size="large"
-                                width="320"
+                                width={400}
                                 text="continue_with"
                                 shape="rectangular"
                             />
