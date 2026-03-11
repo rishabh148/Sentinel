@@ -4,7 +4,7 @@ import logger from '../utils/logger';
 // Use environment variable or fallback to production/development URLs
 const API_URL = import.meta.env.VITE_API_URL ||
     (import.meta.env.PROD
-        ? 'http://localhost:5000/api'  // Production (Render)
+        ? 'https://sentinel-tdbf.onrender.com/api'  // Production (Render)
         : 'http://localhost:5000/api');                  // Development
 
 logger.info('API service initialized', {

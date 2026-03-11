@@ -8,8 +8,8 @@ Sentinel is a full-stack examination platform that uses AI/ML to prevent cheatin
 
 | Platform | URL |
 |----------|-----|
-| **Frontend** | [sentinel-seven-smoky.vercel.app](https://sentinel-seven-smoky.vercel.app) |
-| **Backend API** | [sentinel-api-cbsk.onrender.com](https://sentinel-api-cbsk.onrender.com/api/health) |
+| **Frontend** | [sentinel-nu-ruddy.vercel.app](https://sentinel-nu-ruddy.vercel.app) |
+| **Backend API** | [sentinel-tdbf.onrender.com](https://sentinel-tdbf.onrender.com/api/health) |
 | **GitHub** | [github.com/rishabh148](https://github.com/rishabh148) |
 
 > ⚠️ **Note:** Backend is on Render free tier - first request may take 30-60 seconds to wake up.

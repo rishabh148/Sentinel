@@ -34,7 +34,7 @@ export const PROCTORING_CONFIG = {
 export const API_CONFIG = {
     BASE_URL: import.meta.env.VITE_API_URL ||
         (import.meta.env.PROD
-            ? 'https://sentinel-api-cbsk.onrender.com/api'
+            ? 'https://sentinel-tdbf.onrender.com/api'
             : 'http://localhost:5000/api'),
     TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000,
 };
