@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import RoleSelectionModal from '../components/RoleSelectionModal';
+import Footer from '../components/Footer';
 import api from '../services/api';
 
 // Eye icons as SVG components
@@ -270,7 +271,10 @@ const Login = () => {
                 onSelect={handleRoleSelect}
                 userInfo={newUserInfo}
             />
-</div>
+
+            {/* Developer Footer */}
+            <Footer />
+        </div>
     );
 };
 

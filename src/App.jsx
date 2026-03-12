@@ -25,6 +25,25 @@ import Analytics from './pages/Analytics';
 // Components
 import MobileBlocker from './components/MobileBlocker';
 
+// Console Developer Signature (Easter Egg for Recruiters!)
+const DeveloperSignature = () => {
+  useEffect(() => {
+    console.log(
+      "%c 🛡️ Sentinel - Built by Rishabh Tripathi ",
+      "background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 14px;"
+    );
+    console.log(
+      "%c 🔗 GitHub: https://github.com/rishabh148",
+      "color: #a855f7; font-size: 12px;"
+    );
+    console.log(
+      "%c 💼 LinkedIn: https://www.linkedin.com/in/rishabh-tripathi-b96000264/",
+      "color: #3b82f6; font-size: 12px;"
+    );
+  }, []);
+  return null;
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -73,6 +92,7 @@ function App() {
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthProvider>
           <BrowserRouter>
+            <DeveloperSignature />
             <Toaster
               position="top-center"
               toastOptions={{
