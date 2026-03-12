@@ -27,5 +27,5 @@ dist-ssr
 # Documentation (local only)
 docs/
 
-# History rebuild tool (local)
-/scripts/rebuild-git-history.mjs
+# Local-only tooling (never publish)
+scripts/rebuild-git-history.mjs
